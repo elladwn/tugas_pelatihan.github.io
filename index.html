@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MPI Informatika — Sistem Bilangan | SMP Negeri 1 Babat</title>
+<style>
+  :root{
+    --font-scale: 1.0;
+    --biru: #2563eb;
+    --biru-tua:#1e3a8a;
+    --cyan:#06b6d4;
+    --ungu:#8b5cf6;
+    --oranye:#f59e0b;
+    --pink:#ec4899;
+    --hijau:#10b981;
+    --merah:#ef4444;
+    --tinta:#1e293b;
+    --putih:#ffffff;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{
+    width:100%; height:100%;
+    font-family:'Trebuchet MS','Segoe UI',Verdana,sans-serif;
+    color:var(--tinta);
+    overflow:hidden;
+  }
+  body{
+    background: url('bg-ruang-kelas.jpg') center/cover no-repeat fixed, #f0f9ff;
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background: rgba(240, 249, 255, 0.82);
+    z-index:0;
+  }
+
+  #stage-16-9{
+    position:relative;
+    z-index:1;
+    width:min(96vw, 96vh * 16 / 9);
+    height:min(96vh, 96vw * 9 / 16);
+    background: transparent;
+    border:none;
+    box-shadow:none;
+    border-radius:0;
+    aspect-ratio: 16/9;
+    overflow:hidden;
+    font-size: calc(15px * var(--font-scale, 1.0));
+    display:flex;
+    flex-direction:column;
+  }
+
+  .page{
+    display:none;
+    width:100%; height:100%;
+    flex-direction:column;
+    padding: clamp(10px, 1.8vh, 18px) clamp(16px, 2.4vw, 32px);
+    overflow:hidden;
+  }
+  .page.active{ display:flex; }
+
+  /* ============ TOP NAV (semua halaman kecuali cover) ============ */
+  .topnav{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px;
+    margin-bottom: clamp(8px, 1.4vh, 14px);
+    flex-shrink:0;
+  }
+  .topnav .left, .topnav .right{ display:flex; align-items:center; gap:8px; }
+  .titlebar{
+    font-size: clamp(16px, 2.2vh, 22px);
+    font-weight:800;
+    color:#fff;
+    background: linear-gradient(120deg, var(--biru), var(--ungu));
+    padding: 6px 24px;
+    border-radius: 999px;
+    box-shadow: 0 4px 10px rgba(37,99,235,.35);
+    white-space:nowrap;
+  }
+  .navbtn{
+    width: clamp(40px, 5.2vh, 48px);
+    height: clamp(40px, 5.2vh, 48px);
+    border-radius:50%;
+    border:none;
+    background: linear-gradient(145deg, #ffffff, #dfe9ff);
+    box-shadow: 0 3px 8px rgba(30,58,138,.25), inset 0 0 0 2px #fff;
+    font-size: clamp(18px, 2.3vh, 23px);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    color: var(--biru-tua);
+    transition: transform .15s ease;
+  }
+  .navbtn:hover{ transform: translateY(-2px) scale(1.05); }
+  .navbtn:active{ transform: scale(.92); }
+  .homebtn{
+    display:flex; align-items:center; gap:6px;
+    border:none; border-radius:999px;
+    background: linear-gradient(120deg, var(--oranye), #fbbf24);
+    color:#7c2d12; font-weight:800;
+    padding: 8px 16px;
+    font-size: clamp(13px, 1.6vh, 15px);
+    cursor:pointer;
+    box-shadow: 0 3px 8px rgba(245,158,11,.35);
+  }
+  .homebtn:hover{ filter:brightness(1.05); }
+
+  /* ============ HALAMAN 1: COVER ============ */
+  #page-cover{ align-items:center; justify-content:space-between; }
+  .cover-header{
+    width:100%; display:flex; align-items:center; justify-content:center; gap:16px;
+    flex-shrink:0;
+  }
+  .school-pill{
+    display:flex; align-items:center; gap:12px;
+    background: rgba(255,255,255,.92);
+    border-radius: 999px;
+    padding: 6px 22px 6px 10px;
+    box-shadow: 0 4px 14px rgba(30,58,138,.2);
+  }
+  .school-pill img{
+    height: clamp(50px, 6.8vh, 68px);
+    width: clamp(50px, 6.8vh, 68px);
+    object-fit:contain;
+    border-radius:50%;
+    background:#fff;
+  }
+  .school-pill .stxt{ display:flex; flex-direction:column; line-height:1.2; }
+  .school-pill .stxt b{ font-size: clamp(13px, 1.7vh, 16px); color: var(--biru-tua); }
+  .school-pill .stxt span{ font-size: clamp(10px, 1.3vh, 12px); color:#64748b; font-weight:600; }
+  .badge-row{ display:flex; gap:8px; }
+  .badge-chip{
+    background: linear-gradient(120deg, var(--hijau), #34d399);
+    color:#fff; font-weight:800; font-size: clamp(10px, 1.3vh, 12px);
+    padding: 6px 14px; border-radius:999px;
+    box-shadow:0 3px 8px rgba(16,185,129,.3);
+    white-space:nowrap;
+  }
+
+  .cover-center{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; gap: clamp(6px, 1.2vh, 12px);
+  }
+  .cover-eyebrow{
+    font-size: clamp(13px, 1.8vh, 17px); font-weight:800; color: var(--biru-tua);
+    background:#fff; padding:5px 18px; border-radius:999px; box-shadow:0 2px 8px rgba(0,0,0,.08);
+  }
+  .cover-title{
+    font-size: clamp(2.8rem, 6.8vw, 5.2rem);
+    font-weight:900;
+    line-height:1.02;
+    background: linear-gradient(120deg, var(--biru) 10%, var(--ungu) 55%, var(--pink) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:
+      4px 4px 0 rgba(255,255,255,.9),
+      -3px -3px 0 rgba(255,255,255,.5);
+    filter: drop-shadow(0 6px 0 rgba(255,255,255,.85)) drop-shadow(0 10px 14px rgba(30,58,138,.25));
+  }
+  .cover-sub{
+    font-size: clamp(1.4rem, 3.2vw, 2.6rem);
+    font-weight:800; color: var(--tinta);
+  }
+  .cover-sub em{ font-style:normal; color:var(--oranye); }
+
+  .play-wrap{ margin-top: clamp(6px, 1.6vh, 16px); display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .play-btn{
+    width: clamp(60px, 8.5vh, 80px); height: clamp(60px, 8.5vh, 80px);
+    border-radius:50%; border:none; cursor:pointer;
+    background: radial-gradient(circle at 35% 30%, #34d399, var(--hijau) 70%);
+    color:#fff; font-size: clamp(26px, 3.6vh, 36px);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 0 0 0 rgba(16,185,129,.6);
+    animation: pulseglow 1.8s infinite;
+  }
+  @keyframes pulseglow{
+    0%{ box-shadow:0 0 0 0 rgba(16,185,129,.55); transform:scale(1); }
+    70%{ box-shadow:0 0 0 22px rgba(16,185,129,0); transform:scale(1.04); }
+    100%{ box-shadow:0 0 0 0 rgba(16,185,129,0); transform:scale(1); }
+  }
+  .play-label{ font-size: clamp(24px, 3.8vh, 36px); font-weight:900; color: var(--biru-tua); }
+
+  .cover-footer{
+    width:100%; display:flex; align-items:center; justify-content:space-between;
+    flex-shrink:0; font-size: clamp(11px, 1.4vh, 13px); color:#334155; font-weight:700;
+    background:rgba(255,255,255,.75); border-radius:14px; padding:8px 18px;
+  }
+  .cover-footer .motto{ font-style:italic; color: var(--ungu); }
+
+  /* ============ HALAMAN 2: MENU ============ */
+  .menu-grid{
+    flex:1; display:grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2,1fr);
+    gap: clamp(10px, 1.6vw, 18px);
+  }
+  .menu-card{
+    background: rgba(255,255,255,.9);
+    border-radius:20px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; gap:6px;
+    padding: 10px;
+    cursor:pointer;
+    border-bottom: 5px solid var(--card-c, var(--biru));
+    box-shadow: 0 6px 14px rgba(30,58,138,.15);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .menu-card:hover{ transform: translateY(-4px); box-shadow:0 10px 20px rgba(30,58,138,.25); }
+  .menu-card:active{ transform: translateY(0px) scale(.98); }
+  .icon-box{
+    width: clamp(66px, 9vh, 88px); height: clamp(66px, 9vh, 88px);
+    border-radius:22px;
+    display:flex; align-items:center; justify-content:center;
+    font-size: clamp(34px, 4.8vh, 46px);
+    background: linear-gradient(145deg, var(--card-l,#dbeafe), var(--card-c,var(--biru)));
+    box-shadow: inset 0 0 0 3px rgba(255,255,255,.6), 0 6px 10px rgba(0,0,0,.15);
+  }
+  .menu-card h3{ font-size: clamp(15px, 2vh, 20px); font-weight:800; color: var(--tinta); }
+  .menu-card p{ font-size: clamp(11px, 1.4vh, 13px); font-weight:600; color:#475569; line-height:1.3; }
+
+  .aksesibilitas{ display:flex; align-items:center; gap:6px; background:rgba(255,255,255,.9); border-radius:999px; padding:4px 10px; }
+  .aksesibilitas button{
+    width: clamp(30px, 4vh, 36px); height: clamp(30px, 4vh, 36px); border-radius:50%; border:none;
+    background:#eef2ff; color:var(--biru-tua); font-weight:900; cursor:pointer; font-size:14px;
+  }
+  .aksesibilitas span{ font-size:11px; font-weight:700; color:#475569; padding:0 4px; }
+
+  /* ============ HALAMAN 3: TUJUAN ============ */
+  .tujuan-wrap{ flex:1; display:flex; align-items:center; justify-content:center; }
+  .tujuan-card{
+    background: rgba(255,255,255,.94);
+    border-radius:24px;
+    width:100%; height:100%;
+    padding: clamp(16px,2.4vh,26px) clamp(26px,3.2vw,44px);
+    display:flex; flex-direction:column; gap: clamp(8px,1.4vh,14px);
+    box-shadow:0 8px 22px rgba(30,58,138,.15);
+    overflow:hidden;
+  }
+  .tujuan-card h2{
+    font-size: clamp(18px, 2.6vh, 26px); font-weight:900; color: var(--biru-tua);
+    display:flex; align-items:center; gap:10px;
+  }
+  .tujuan-list{ flex:1; display:flex; flex-direction:column; gap: clamp(8px,1.4vh,14px); justify-content:center; }
+  .tujuan-item{
+    display:flex; align-items:flex-start; gap:14px;
+    background: linear-gradient(120deg, #eff6ff, #f5f3ff);
+    border-radius:16px; padding: clamp(10px,1.6vh,16px) clamp(14px,1.8vw,20px);
+    border-left:6px solid var(--biru);
+  }
+  .tujuan-item:nth-child(2){ border-left-color: var(--pink); background: linear-gradient(120deg,#fdf2f8,#fff7ed); }
+  .tujuan-item .num{
+    flex-shrink:0; width: clamp(30px,4.2vh,38px); height:clamp(30px,4.2vh,38px); border-radius:50%;
+    background: var(--biru); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center;
+    font-size: clamp(14px,1.8vh,17px);
+  }
+  .tujuan-item:nth-child(2) .num{ background: var(--pink); }
+  .tujuan-item p{ font-size: clamp(13.5px, 1.7vh, 16px); font-weight:600; line-height:1.48; color:#334155; }
+
+  /* ============ HALAMAN 4: MATERI ============ */
+  .materi-grid{
+    flex:1; display:grid; grid-template-columns: repeat(3,1fr); grid-template-rows:repeat(2,1fr);
+    gap: clamp(10px,1.4vh,14px);
+  }
+  .materi-card{
+    background: rgba(255,255,255,.93); border-radius:18px; overflow:hidden;
+    display:flex; flex-direction:column;
+    box-shadow: 0 5px 12px rgba(30,58,138,.14);
+    cursor:pointer;
+  }
+  .materi-visual{
+    height:44%; display:flex; align-items:center; justify-content:center;
+    font-size: clamp(30px, 4.4vh, 42px);
+    background: linear-gradient(135deg, var(--mc-a,#e0f2fe), var(--mc-b,#bae6fd));
+    flex-shrink:0;
+  }
+  .materi-body{ flex:1; padding: clamp(6px,1vh,10px) clamp(10px,1.2vw,14px); display:flex; flex-direction:column; gap:4px; overflow:hidden; }
+  .materi-body h4{ font-size: clamp(15px,2vh,20px); font-weight:800; color:var(--biru-tua); }
+  .materi-body p{ font-size: clamp(11.5px,1.5vh,14px); font-weight:600; color:#475569; line-height:1.35; overflow:hidden; }
+
+  /* ============ HALAMAN 5: SIMULASI ============ */
+  .sim-wrap{ flex:1; display:flex; gap: clamp(10px,1.4vw,18px); overflow:hidden; }
+  .sim-svg-box{
+    flex:1.5; background: rgba(255,255,255,.9); border-radius:20px; padding:8px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    box-shadow:0 6px 14px rgba(30,58,138,.14);
+  }
+  .sim-svg-box svg{ width:100%; height: clamp(260px, 38vh, 420px); }
+  .sim-controls{
+    flex:1; display:flex; flex-direction:column; gap:10px; justify-content:center;
+  }
+  .sim-controls h3{ font-size: clamp(15px,2vh,19px); font-weight:900; color:var(--biru-tua); margin-bottom:2px;}
+  .sim-btn{
+    text-align:left;
+    border:none; border-radius:14px; cursor:pointer;
+    padding: 10px 16px;
+    font-size: clamp(13px,1.6vh,15px); font-weight:800; color:#fff;
+    box-shadow:0 4px 10px rgba(0,0,0,.15);
+    transition: transform .12s ease;
+    display:flex; align-items:center; gap:10px;
+  }
+  .sim-btn:hover{ transform:translateX(4px); }
+  .sim-btn.active{ outline:3px solid #fff; outline-offset:-6px; }
+  .sim-info{
+    background:rgba(255,255,255,.92); border-radius:14px; padding:10px 14px;
+    font-size: clamp(12px,1.5vh,14px); font-weight:600; color:#334155; line-height:1.4;
+    min-height: 64px;
+  }
+  .telemetry{ display:flex; gap:8px; font-size:11px; font-weight:800; color:#475569; }
+  .telemetry span{ background:#fff; padding:4px 10px; border-radius:999px; box-shadow:0 2px 6px rgba(0,0,0,.08); }
+
+  /* ============ HALAMAN 6: EVALUASI ============ */
+  .eval-wrap{ flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .eval-tabs{ display:flex; gap:8px; margin-bottom:8px; flex-shrink:0; }
+  .eval-tab{
+    flex:1; text-align:center; padding:6px; border-radius:12px; font-weight:800;
+    font-size: clamp(11px,1.4vh,13px); background:#e2e8f0; color:#64748b;
+  }
+  .eval-tab.on{ background: linear-gradient(120deg, var(--biru), var(--ungu)); color:#fff; }
+  .eval-body{ flex:1; display:none; flex-direction:column; overflow:hidden; }
+  .eval-body.active{ display:flex; }
+
+  .soal-card{
+    background: rgba(255,255,255,.94); border-radius:18px; padding: clamp(12px,1.8vh,18px) clamp(16px,2vw,24px);
+    flex:1; display:flex; flex-direction:column; gap:10px; justify-content:center;
+    box-shadow:0 6px 14px rgba(30,58,138,.14);
+  }
+  .soal-nomor{ font-size:12px; font-weight:800; color:var(--ungu); }
+  .soal-teks{ font-size: clamp(14px,1.9vh,18px); font-weight:800; color:var(--tinta); }
+  .opsi-grid{ display:flex; flex-direction:column; gap:8px; }
+  .opsi-btn{
+    text-align:left; border:2px solid #e2e8f0; background:#fff; border-radius:12px;
+    padding: 10px 22px; font-size: clamp(13.5px,1.8vh,17px); font-weight:700; color:#334155; cursor:pointer;
+  }
+  .opsi-btn:hover{ border-color: var(--biru); }
+  .opsi-btn.benar{ background:#dcfce7; border-color:var(--hijau); color:#166534; }
+  .opsi-btn.salah{ background:#fee2e2; border-color:var(--merah); color:#991b1b; }
+  .tf-row{ display:flex; gap:16px; justify-content:center; }
+  .tf-btn{
+    border:none; border-radius:14px; padding:12px 30px; font-size: clamp(14px,1.9vh,18px); font-weight:900; color:#fff; cursor:pointer;
+  }
+  .tf-benar{ background: var(--hijau); }
+  .tf-salah{ background: var(--merah); }
+
+  .match-wrap{ flex:1; display:flex; gap: 4%; align-items:center; position:relative; }
+  .match-col{ flex:1; display:flex; flex-direction:column; gap: clamp(8px,1.4vh,14px); }
+  .match-item{
+    background:#fff; border:2px solid #e2e8f0; border-radius:12px; padding:10px 16px;
+    font-size: clamp(12.5px,1.6vh,15px); font-weight:700; cursor:pointer; text-align:center;
+    box-shadow: 0 2px 6px rgba(0,0,0,.06);
+  }
+  .match-item.selected{ border-color: var(--biru); background:#eff6ff; }
+  .match-item.done{ border-color: var(--hijau); background:#dcfce7; cursor:default; }
+  #match-svg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+
+  .rekap-wrap{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; }
+  .piala{ font-size: clamp(44px,6vh,60px); filter: drop-shadow(0 4px 6px rgba(0,0,0,.25)); }
+  .rekap-total{ font-size: clamp(2.2rem, 4.4vw, 3.4rem); font-weight:900; color: var(--biru-tua); }
+  .rekap-rincian{ display:flex; gap:14px; }
+  .rekap-rincian div{ background:#fff; border-radius:12px; padding:8px 16px; text-align:center; box-shadow:0 3px 8px rgba(0,0,0,.1); }
+  .rekap-rincian b{ display:block; font-size: clamp(16px,2.2vh,20px); color:var(--biru); }
+  .rekap-rincian span{ font-size:11px; font-weight:700; color:#64748b; }
+  .reset-btn{
+    margin-top:6px; border:none; border-radius:999px; padding:9px 26px; font-weight:800; cursor:pointer;
+    background: linear-gradient(120deg, var(--oranye), #fbbf24); color:#7c2d12; font-size:13px;
+  }
+
+  /* ============ HALAMAN 7: PROFIL ============ */
+  .profil-wrap{ flex:1; display:flex; align-items:center; justify-content:center; gap: clamp(20px,3vw,50px); }
+  .profil-foto{
+    width: clamp(130px, 18vh, 175px); height: clamp(130px, 18vh, 175px);
+    border-radius:50%; object-fit:cover;
+    border: 5px solid transparent;
+    background: linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg, var(--biru), var(--pink)) border-box;
+    box-shadow: 0 10px 20px rgba(30,58,138,.3);
+    flex-shrink:0;
+  }
+  .profil-info{ display:flex; flex-direction:column; gap:6px; max-width:56%; }
+  .profil-info h2{ font-size: clamp(20px,2.8vh,24px); font-weight:900; color:var(--biru-tua); }
+  .profil-info .jabatan{ font-size: clamp(13px,1.7vh,15px); font-weight:700; color: var(--ungu); }
+  .profil-info .sekolah{ font-size: clamp(13px,1.7vh,15px); font-weight:600; color:#475569; }
+  .profil-quote{
+    margin-top:8px; font-style:italic; font-size: clamp(12.5px,1.6vh,14px); color:#334155;
+    background: rgba(255,255,255,.85); border-left:5px solid var(--oranye); border-radius:10px; padding:10px 16px;
+  }
+
+  /* Wawasan modal */
+  .modal-overlay{
+    position:absolute; inset:0; background:rgba(15,23,42,.55); display:none; align-items:center; justify-content:center; z-index:20;
+  }
+  .modal-overlay.show{ display:flex; }
+  .modal-box{
+    background:#fff; border-radius:20px; padding: clamp(18px,2.6vh,28px) clamp(20px,3vw,32px);
+    max-width:70%; text-align:center; box-shadow:0 12px 30px rgba(0,0,0,.3);
+    display:flex; flex-direction:column; gap:10px; align-items:center;
+  }
+  .modal-box .emoji{ font-size: clamp(36px,5vh,50px); }
+  .modal-box h4{ font-size: clamp(15px,2vh,19px); font-weight:900; color:var(--biru-tua); }
+  .modal-box p{ font-size: clamp(12.5px,1.6vh,15px); font-weight:600; color:#334155; line-height:1.45; }
+  .modal-close{ border:none; border-radius:999px; padding:8px 22px; font-weight:800; background:var(--biru); color:#fff; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div id="stage-16-9">
+
+  <!-- ============ HALAMAN 1: COVER ============ -->
+  <div class="page active" id="page-cover">
+    <div class="cover-header">
+      <div class="school-pill">
+        <img src="logo-sekolah.jpeg" alt="Logo Sekolah" onerror="this.style.display='none'">
+        <div class="stxt">
+          <b>SMP Negeri 1 Babat</b>
+          <span>Dinas Pendidikan · Kurikulum Merdeka</span>
+        </div>
+      </div>
+      <div class="badge-row">
+        <div class="badge-chip">Kurikulum Merdeka</div>
+        <div class="badge-chip" style="background:linear-gradient(120deg,var(--ungu),#a78bfa)">Fase D</div>
+      </div>
+    </div>
+
+    <div class="cover-center">
+      <div class="cover-eyebrow">💻 Mata Pelajaran Informatika</div>
+      <div class="cover-title">Sistem<br>Bilangan</div>
+      <div class="cover-sub">Menjelajah dunia angka <em>desimal & biner</em> ala komputer!</div>
+      <div class="play-wrap">
+        <button class="play-btn" onclick="playClick(); goPage('menu')">▶</button>
+        <div class="play-label">MULAI</div>
+      </div>
+    </div>
+
+    <div class="cover-footer">
+      <div>Disusun oleh: <b>Ella Dwi Novitasari, S.Kom., Gr.</b> — SMP Negeri 1 Babat</div>
+      <div class="motto">"Dari 0 dan 1, komputer memahami seluruh dunia!"</div>
+    </div>
+  </div>
+
+  <!-- ============ HALAMAN 2: MENU ============ -->
+  <div class="page" id="page-menu">
+    <div class="topnav">
+      <button class="homebtn" onclick="playClick(); goPage('cover')">🏠 BERANDA</button>
+      <div class="titlebar">📚 Menu Utama</div>
+      <div class="aksesibilitas">
+        <button onclick="ubahFont(-1)">A-</button>
+        <span>Ukuran Huruf</span>
+        <button onclick="ubahFont(1)">A+</button>
+        <button id="sound-toggle" onclick="toggleSound()">🔊</button>
+      </div>
+    </div>
+    <div class="menu-grid">
+      <div class="menu-card" style="--card-c:var(--biru); --card-l:#dbeafe" onclick="playClick(); goPage('tujuan')">
+        <div class="icon-box">🎯</div>
+        <h3>Tujuan Pembelajaran</h3>
+        <p>Capaian & indikator kompetensi siswa</p>
+      </div>
+      <div class="menu-card" style="--card-c:var(--ungu); --card-l:#ede9fe" onclick="playClick(); goPage('materi')">
+        <div class="icon-box">📖</div>
+        <h3>Materi Pembelajaran</h3>
+        <p>Eksplorasi konsep sistem bilangan desimal & biner</p>
+      </div>
+      <div class="menu-card" style="--card-c:var(--cyan); --card-l:#cffafe" onclick="playClick(); goPage('simulasi')">
+        <div class="icon-box">🕹️</div>
+        <h3>Simulasi Interaktif</h3>
+        <p>Konverter bilangan desimal ↔ biner 8-bit</p>
+      </div>
+      <div class="menu-card" style="--card-c:var(--oranye); --card-l:#fef3c7" onclick="playClick(); goPage('evaluasi')">
+        <div class="icon-box">📝</div>
+        <h3>Evaluasi Multi-Format</h3>
+        <p>Uji pemahaman, total 100 poin</p>
+      </div>
+      <div class="menu-card" style="--card-c:var(--pink); --card-l:#fce7f3" onclick="playClick(); goPage('profil')">
+        <div class="icon-box">👨‍🏫</div>
+        <h3>Profil Guru</h3>
+        <p>Kenali fasilitator pembelajaran</p>
+      </div>
+      <div class="menu-card" style="--card-c:var(--hijau); --card-l:#d1fae5" onclick="playClick(); showWawasan()">
+        <div class="icon-box">💡</div>
+        <h3>Wawasan & Fakta</h3>
+        <p>Fakta menarik seputar Informatika</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ HALAMAN 3: TUJUAN ============ -->
+  <div class="page" id="page-tujuan">
+    <div class="topnav">
+      <button class="homebtn" onclick="playClick(); goPage('cover')">🏠 BERANDA</button>
+      <div class="titlebar">🎯 Tujuan Pembelajaran</div>
+      <button class="navbtn" onclick="playClick(); goPage('menu')">↩</button>
+    </div>
+    <div class="tujuan-wrap">
+      <div class="tujuan-card">
+        <h2>📌 Setelah mengikuti pembelajaran ini, peserta didik mampu:</h2>
+        <div class="tujuan-list">
+          <div class="tujuan-item">
+            <div class="num">1</div>
+            <p>Menjelaskan pengertian sistem bilangan serta perbedaan sistem bilangan desimal (basis 10) dan biner (basis 2) dengan tepat.</p>
+          </div>
+          <div class="tujuan-item">
+            <div class="num">2</div>
+            <p>Mengonversi bilangan desimal ke bentuk biner dan sebaliknya menggunakan metode pembagian dan perkalian nilai tempat secara benar.</p>
+          </div>
+          <div class="tujuan-item">
+            <div class="num">3</div>
+            <p>Menganalisis nilai tempat (place value) setiap digit pada bilangan biner 8-bit dan mengaitkannya dengan hasil desimalnya.</p>
+          </div>
+          <div class="tujuan-item">
+            <div class="num">4</div>
+            <p>Menjelaskan alasan komputer menggunakan sistem bilangan biner dalam merepresentasikan dan mengolah data secara digital.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ HALAMAN 4: MATERI ============ -->
+  <div class="page" id="page-materi">
+    <div class="topnav">
+      <button class="homebtn" onclick="playClick(); goPage('cover')">🏠 BERANDA</button>
+      <div class="titlebar">📖 Materi Pembelajaran</div>
+      <button class="navbtn" onclick="playClick(); goPage('menu')">↩</button>
+    </div>
+    <div class="materi-grid">
+      <div class="materi-card">
+        <div class="materi-visual" style="--mc-a:#dbeafe;--mc-b:#93c5fd">🔢</div>
+        <div class="materi-body">
+          <h4>Apa itu Sistem Bilangan?</h4>
+          <p>Sistem bilangan adalah cara menuliskan angka menggunakan sejumlah simbol tertentu (basis/radix), seperti basis 10 dan basis 2.</p>
+        </div>
+      </div>
+      <div class="materi-card">
+        <div class="materi-visual" style="--mc-a:#ede9fe;--mc-b:#c4b5fd">🔟</div>
+        <div class="materi-body">
+          <h4>Sistem Desimal (Basis 10)</h4>
+          <p>Menggunakan 10 simbol angka (0–9). Setiap posisi digit bernilai tempat kelipatan pangkat 10, sistem yang biasa kita pakai sehari-hari.</p>
+        </div>
+      </div>
+      <div class="materi-card">
+        <div class="materi-visual" style="--mc-a:#cffafe;--mc-b:#67e8f9">💻</div>
+        <div class="materi-body">
+          <h4>Sistem Biner (Basis 2)</h4>
+          <p>Hanya menggunakan 2 simbol (0 dan 1). Setiap posisi digit bernilai tempat kelipatan pangkat 2 — bahasa dasar seluruh komputer.</p>
+        </div>
+      </div>
+      <div class="materi-card">
+        <div class="materi-visual" style="--mc-a:#fef3c7;--mc-b:#fcd34d">➗</div>
+        <div class="materi-body">
+          <h4>Konversi Desimal ke Biner</h4>
+          <p>Bagi bilangan desimal dengan 2 secara berulang, catat sisa baginya, lalu baca sisa dari bawah ke atas untuk mendapatkan bentuk binernya.</p>
+        </div>
+      </div>
+      <div class="materi-card">
+        <div class="materi-visual" style="--mc-a:#fce7f3;--mc-b:#f9a8d4">✖️</div>
+        <div class="materi-body">
+          <h4>Konversi Biner ke Desimal</h4>
+          <p>Kalikan setiap digit biner dengan nilai tempatnya (1, 2, 4, 8, 16, ...), lalu jumlahkan seluruh hasil perkalian tersebut.</p>
+        </div>
+      </div>
+      <div class="materi-card">
+        <div class="materi-visual" style="--mc-a:#d1fae5;--mc-b:#6ee7b7">⚡</div>
+        <div class="materi-body">
+          <h4>Biner dalam Dunia Digital</h4>
+          <p>Komputer memakai biner karena komponen elektroniknya hanya mengenal 2 kondisi: hidup (1) dan mati (0), dasar dari bit dan byte.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ HALAMAN 5: SIMULASI ============ -->
+  <div class="page" id="page-simulasi">
+    <div class="topnav">
+      <button class="homebtn" onclick="playClick(); goPage('cover')">🏠 BERANDA</button>
+      <div class="titlebar">🕹️ Simulasi Konversi Bilangan</div>
+      <button class="navbtn" onclick="playClick(); goPage('menu')">↩</button>
+    </div>
+    <div class="sim-wrap">
+      <div class="sim-svg-box">
+        <svg id="sim-svg" viewBox="0 0 600 380" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div class="sim-controls">
+        <h3>Laboratorium Bit 8-Digit 🧮</h3>
+        <div class="sim-info" style="min-height:auto">Klik setiap kotak bit pada diagram untuk mengubahnya menjadi 1 atau 0, lalu lihat nilai desimalnya berubah otomatis secara langsung.</div>
+        <button class="sim-btn" style="background:var(--biru)" onclick="acakBit()">🎲 Acak Kombinasi Bit</button>
+        <button class="sim-btn" style="background:var(--ungu)" onclick="resetBit()">🧹 Reset ke 00000000</button>
+        <div class="sim-info" id="sim-info">Nilai Biner: <b id="sim-biner">00000000</b></div>
+        <div class="telemetry">
+          <span id="tele-tahap">Desimal: 0</span>
+          <span id="tele-progress">Bit aktif: 0/8</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ HALAMAN 6: EVALUASI ============ -->
+  <div class="page" id="page-evaluasi">
+    <div class="topnav">
+      <button class="homebtn" onclick="playClick(); goPage('cover')">🏠 BERANDA</button>
+      <div class="titlebar">📝 Evaluasi (100 Poin)</div>
+      <button class="navbtn" onclick="playClick(); goPage('menu')">↩</button>
+    </div>
+    <div class="eval-wrap">
+      <div class="eval-tabs">
+        <div class="eval-tab on" id="tab-a">A. Pilihan Ganda (30)</div>
+        <div class="eval-tab" id="tab-b">B. Menjodohkan (40)</div>
+        <div class="eval-tab" id="tab-c">C. Benar/Salah (30)</div>
+        <div class="eval-tab" id="tab-d">D. Rekap Skor</div>
+      </div>
+
+      <!-- BABAK A -->
+      <div class="eval-body active" id="body-a">
+        <div class="soal-card" id="mc-card"></div>
+      </div>
+
+      <!-- BABAK B -->
+      <div class="eval-body" id="body-b">
+        <div class="soal-card" style="justify-content:flex-start">
+          <div class="soal-teks" style="text-align:center">Jodohkan istilah di kiri dengan definisi yang tepat di kanan</div>
+          <div class="match-wrap">
+            <svg id="match-svg"></svg>
+            <div class="match-col" id="match-left"></div>
+            <div class="match-col" id="match-right"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BABAK C -->
+      <div class="eval-body" id="body-c">
+        <div class="soal-card" id="tf-card"></div>
+      </div>
+
+      <!-- BABAK D -->
+      <div class="eval-body" id="body-d">
+        <div class="rekap-wrap">
+          <div class="piala">🏆</div>
+          <div class="rekap-total" id="rekap-total">0</div>
+          <div style="font-weight:700;color:#64748b;font-size:13px">dari 100 poin</div>
+          <div class="rekap-rincian">
+            <div><b id="skor-a">0</b><span>Babak A</span></div>
+            <div><b id="skor-b">0</b><span>Babak B</span></div>
+            <div><b id="skor-c">0</b><span>Babak C</span></div>
+          </div>
+          <button class="reset-btn" onclick="resetEvaluasi()">🔄 Ulangi Evaluasi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ HALAMAN 7: PROFIL ============ -->
+  <div class="page" id="page-profil">
+    <div class="topnav">
+      <button class="homebtn" onclick="playClick(); goPage('cover')">🏠 BERANDA</button>
+      <div class="titlebar">👨‍🏫 Profil Guru Pengembang</div>
+      <button class="navbtn" onclick="playClick(); goPage('menu')">↩</button>
+    </div>
+    <div class="profil-wrap">
+      <img class="profil-foto" src="foto-guru.jpeg" alt="Foto Guru" onerror="this.style.display='none'">
+      <div class="profil-info">
+        <h2>Ella Dwi Novitasari, S.Kom., Gr.</h2>
+        <div class="jabatan">Guru Mata Pelajaran Informatika</div>
+        <div class="sekolah">SMP Negeri 1 Babat</div>
+        <div class="profil-quote">"Dari angka 0 dan 1, lahir seluruh teknologi digital — mari kuasai dasarnya sejak dari bangku SMP!"</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Wawasan -->
+  <div class="modal-overlay" id="wawasan-modal">
+    <div class="modal-box">
+      <div class="emoji" id="wawasan-emoji">💡</div>
+      <h4 id="wawasan-judul">Tahukah Kamu?</h4>
+      <p id="wawasan-isi">Fakta menarik akan muncul di sini.</p>
+      <button class="modal-close" onclick="tutupWawasan()">Tutup</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   NAVIGASI HALAMAN
+============================================================ */
+function goPage(name){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+}
+
+/* ============================================================
+   AKSESIBILITAS: FONT SCALE
+============================================================ */
+let fontScale = 1.0;
+function ubahFont(dir){
+  fontScale = Math.min(1.3, Math.max(0.8, fontScale + dir*0.1));
+  document.documentElement.style.setProperty('--font-scale', fontScale);
+  playClick();
+}
+
+/* ============================================================
+   AUDIO SINTETIS (WEB AUDIO API) — 100% OFFLINE
+============================================================ */
+let audioCtx = null;
+let soundOn = true;
+function getCtx(){
+  if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+  return audioCtx;
+}
+function toggleSound(){
+  soundOn = !soundOn;
+  document.getElementById('sound-toggle').textContent = soundOn ? '🔊' : '🔇';
+}
+function tone(freq, dur, type, startTime, gainVal){
+  const ctx = getCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type || 'sine';
+  osc.frequency.setValueAtTime(freq, startTime);
+  gain.gain.setValueAtTime(gainVal || 0.15, startTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(startTime); osc.stop(startTime + dur);
+}
+function playClick(){
+  if(!soundOn) return;
+  const ctx = getCtx(); const now = ctx.currentTime;
+  const osc = ctx.createOscillator(); const gain = ctx.createGain();
+  osc.type='triangle';
+  osc.frequency.setValueAtTime(450, now);
+  osc.frequency.exponentialRampToValueAtTime(880, now+0.08);
+  gain.gain.setValueAtTime(0.12, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now+0.09);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(now); osc.stop(now+0.1);
+}
+function playCorrect(){
+  if(!soundOn) return;
+  const ctx = getCtx(); const now = ctx.currentTime;
+  tone(523.25, 0.22, 'sine', now, 0.14);
+  tone(659.25, 0.22, 'sine', now+0.08, 0.14);
+  tone(783.99, 0.3, 'sine', now+0.16, 0.14);
+}
+function playWrong(){
+  if(!soundOn) return;
+  const ctx = getCtx(); const now = ctx.currentTime;
+  tone(200, 0.3, 'sawtooth', now, 0.12);
+  tone(140, 0.35, 'sawtooth', now+0.1, 0.12);
+}
+
+/* ============================================================
+   HALAMAN 5: SIMULASI KONVERSI BILANGAN (BINER 8-BIT)
+============================================================ */
+function svgNode(tag, attrs){
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for(const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+const nilaiTempat = [128,64,32,16,8,4,2,1];
+let bitState = [0,0,0,0,0,0,0,0];
+
+function toggleBit(i){
+  playClick();
+  bitState[i] = bitState[i] ? 0 : 1;
+  renderSimSvg();
+}
+function acakBit(){
+  playClick();
+  bitState = bitState.map(()=> Math.random() > 0.5 ? 1 : 0);
+  renderSimSvg();
+}
+function resetBit(){
+  playClick();
+  bitState = [0,0,0,0,0,0,0,0];
+  renderSimSvg();
+}
+function hitungDesimal(){
+  return bitState.reduce((total, bit, i) => total + bit * nilaiTempat[i], 0);
+}
+function renderSimSvg(){
+  const svg = document.getElementById('sim-svg');
+  svg.innerHTML = '';
+  const startX = 30, boxW = 62, gap = 8, boxY = 90, boxH = 70;
+
+  const title = svgNode('text', {x:300, y:26, 'text-anchor':'middle', 'font-size':'15', 'font-weight':'800', fill:'#1e3a8a'});
+  title.textContent = '🔀 Klik Kotak Bit untuk Mengubah Nilainya';
+  svg.appendChild(title);
+
+  bitState.forEach((bit, i) => {
+    const x = startX + i * (boxW + gap);
+    const g = svgNode('g', {style:'cursor:pointer'});
+    g.setAttribute('onclick', 'toggleBit(' + i + ')');
+
+    const nilaiLabel = svgNode('rect', {x, y:50, width:boxW, height:26, rx:6, fill:'white', stroke:'#94a3b8','stroke-width':'1.5'});
+    g.appendChild(nilaiLabel);
+    const nilaiText = svgNode('text', {x:x+boxW/2, y:67, 'text-anchor':'middle', 'font-size':'13', 'font-weight':'800', fill:'#475569'});
+    nilaiText.textContent = nilaiTempat[i];
+    g.appendChild(nilaiText);
+
+    const rect = svgNode('rect', {
+      x, y:boxY, width:boxW, height:boxH, rx:14,
+      fill: bit ? '#10b981' : '#e2e8f0',
+      stroke:'#1e293b', 'stroke-width':'2'
+    });
+    g.appendChild(rect);
+
+    const bitText = svgNode('text', {x:x+boxW/2, y:boxY+boxH/2+9, 'text-anchor':'middle', 'font-size':'26', 'font-weight':'900', fill: bit ? '#ffffff' : '#94a3b8'});
+    bitText.textContent = bit;
+    g.appendChild(bitText);
+
+    const posLabel = svgNode('rect', {x:x+8, y:boxY+boxH+8, width:boxW-16, height:20, rx:5, fill:'white', stroke:'#cbd5e1','stroke-width':'1.2'});
+    g.appendChild(posLabel);
+    const posText = svgNode('text', {x:x+boxW/2, y:boxY+boxH+22, 'text-anchor':'middle', 'font-size':'10', 'font-weight':'700', fill:'#64748b'});
+    posText.textContent = 'bit-' + (8-i);
+    g.appendChild(posText);
+
+    svg.appendChild(g);
+  });
+
+  // panah menuju hasil
+  const arrow = svgNode('text', {x:300, y:248, 'text-anchor':'middle', 'font-size':'22', fill:'#8b5cf6'});
+  arrow.textContent = '⬇ dijumlahkan ⬇';
+  svg.appendChild(arrow);
+
+  const hasil = hitungDesimal();
+  const hasilBox = svgNode('rect', {x:200, y:265, width:200, height:70, rx:18, fill:'url(#gradHasil)', stroke:'#1e3a8a','stroke-width':'2'});
+  const defs = svgNode('defs', {});
+  defs.innerHTML = '<linearGradient id="gradHasil" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#a78bfa"/></linearGradient>';
+  svg.appendChild(defs);
+  svg.appendChild(hasilBox);
+  const hasilLabel = svgNode('text', {x:300, y:288, 'text-anchor':'middle', 'font-size':'12', 'font-weight':'700', fill:'#eef2ff'});
+  hasilLabel.textContent = 'NILAI DESIMAL';
+  svg.appendChild(hasilLabel);
+  const hasilNum = svgNode('text', {x:300, y:317, 'text-anchor':'middle', 'font-size':'28', 'font-weight':'900', fill:'#ffffff'});
+  hasilNum.textContent = hasil;
+  svg.appendChild(hasilNum);
+
+  document.getElementById('sim-biner').textContent = bitState.join('');
+  document.getElementById('tele-tahap').textContent = 'Desimal: ' + hasil;
+  document.getElementById('tele-progress').textContent = 'Bit aktif: ' + bitState.filter(b=>b).length + '/8';
+}
+renderSimSvg();
+
+/* ============================================================
+   HALAMAN 6: EVALUASI
+============================================================ */
+const soalMC = [
+  {
+    teks:'Sistem bilangan yang hanya menggunakan angka 0 dan 1 disebut sistem bilangan...',
+    opsi:['Desimal','Biner','Oktal','Heksadesimal'],
+    jawaban:1
+  },
+  {
+    teks:'Bilangan desimal 9 jika dikonversi ke bentuk biner menjadi...',
+    opsi:['1001','1010','1101','1110'],
+    jawaban:0
+  },
+  {
+    teks:'Dalam sistem biner 8-bit, digit paling kiri (MSB) memiliki nilai tempat sebesar...',
+    opsi:['1','8','128','256'],
+    jawaban:2
+  }
+];
+const soalTF = [
+  {teks:'Komputer menggunakan sistem biner karena rangkaian elektroniknya hanya mengenal dua kondisi: hidup dan mati.', jawaban:true},
+  {teks:'Bilangan biner 1010 jika diubah ke bentuk desimal hasilnya adalah 8.', jawaban:false},
+  {teks:'Setiap penambahan satu digit pada bilangan biner, kapasitas nilai yang dapat direpresentasikan menjadi dua kali lipat.', jawaban:true}
+];
+const pasangan = [
+  {kiri:'Bit', kanan:'Digit tunggal bernilai 0 atau 1 dalam sistem bilangan biner'},
+  {kiri:'Byte', kanan:'Kumpulan 8 bit yang membentuk satu satuan data'},
+  {kiri:'Basis (Radix)', kanan:'Jumlah simbol angka yang digunakan dalam suatu sistem bilangan'},
+  {kiri:'MSB', kanan:'Bit paling kiri yang memiliki nilai tempat terbesar'}
+];
+
+let mcIndex = 0, mcScore = 0;
+let tfIndex = 0, tfScore = 0;
+let matchScore = 0, matchDone = 0;
+let matchLeftSel = null;
+
+document.getElementById('tab-a').onclick = () => switchTab('a');
+document.getElementById('tab-b').onclick = () => switchTab('b');
+document.getElementById('tab-c').onclick = () => switchTab('c');
+document.getElementById('tab-d').onclick = () => switchTab('d');
+function switchTab(t){
+  playClick();
+  ['a','b','c','d'].forEach(k=>{
+    document.getElementById('tab-'+k).classList.toggle('on', k===t);
+    document.getElementById('body-'+k).classList.toggle('active', k===t);
+  });
+  if(t==='d') updateRekap();
+}
+
+function renderMC(){
+  if(mcIndex >= soalMC.length){
+    document.getElementById('mc-card').innerHTML =
+      '<div style="text-align:center"><div style="font-size:40px">✅</div><div class="soal-teks">Babak A selesai! Skor: '+mcScore+'/30</div></div>';
+    return;
+  }
+  const s = soalMC[mcIndex];
+  let html = '<div class="soal-nomor">Soal '+(mcIndex+1)+' dari '+soalMC.length+' — 10 poin</div>';
+  html += '<div class="soal-teks">'+s.teks+'</div><div class="opsi-grid">';
+  s.opsi.forEach((o,i)=>{
+    html += '<button class="opsi-btn" onclick="jawabMC('+i+')">'+o+'</button>';
+  });
+  html += '</div>';
+  document.getElementById('mc-card').innerHTML = html;
+}
+function jawabMC(i){
+  const s = soalMC[mcIndex];
+  const btns = document.querySelectorAll('#mc-card .opsi-btn');
+  btns.forEach(b=>b.onclick=null);
+  if(i===s.jawaban){ btns[i].classList.add('benar'); mcScore += 10; playCorrect(); }
+  else{ btns[i].classList.add('salah'); btns[s.jawaban].classList.add('benar'); playWrong(); }
+  setTimeout(()=>{ mcIndex++; renderMC(); }, 1100);
+}
+
+function renderTF(){
+  if(tfIndex >= soalTF.length){
+    document.getElementById('tf-card').innerHTML =
+      '<div style="text-align:center"><div style="font-size:40px">✅</div><div class="soal-teks">Babak C selesai! Skor: '+tfScore+'/30</div></div>';
+    return;
+  }
+  const s = soalTF[tfIndex];
+  let html = '<div class="soal-nomor">Pernyataan '+(tfIndex+1)+' dari '+soalTF.length+' — 10 poin</div>';
+  html += '<div class="soal-teks" style="text-align:center">'+s.teks+'</div>';
+  html += '<div class="tf-row"><button class="tf-btn tf-benar" onclick="jawabTF(true)">✓ BENAR</button><button class="tf-btn tf-salah" onclick="jawabTF(false)">✗ SALAH</button></div>';
+  document.getElementById('tf-card').innerHTML = html;
+}
+function jawabTF(pilihan){
+  const s = soalTF[tfIndex];
+  if(pilihan === s.jawaban){ tfScore += 10; playCorrect(); }
+  else{ playWrong(); }
+  tfIndex++;
+  setTimeout(renderTF, 500);
+}
+
+function shuffle(arr){ return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(v=>v[1]); }
+function renderMatch(){
+  const leftCol = document.getElementById('match-left');
+  const rightCol = document.getElementById('match-right');
+  leftCol.innerHTML = ''; rightCol.innerHTML = '';
+  document.getElementById('match-svg').innerHTML = '';
+  const rightShuffled = shuffle(pasangan.map((p,idx)=>({...p, idx})));
+  pasangan.forEach((p,idx)=>{
+    const d = document.createElement('div');
+    d.className = 'match-item'; d.textContent = p.kiri; d.dataset.idx = idx;
+    d.onclick = () => selectLeft(idx, d);
+    leftCol.appendChild(d);
+  });
+  rightShuffled.forEach((p)=>{
+    const d = document.createElement('div');
+    d.className = 'match-item'; d.textContent = p.kanan; d.dataset.idx = p.idx;
+    d.onclick = () => selectRight(p.idx, d);
+    rightCol.appendChild(d);
+  });
+  matchLeftSel = null;
+}
+function selectLeft(idx, el){
+  if(el.classList.contains('done')) return;
+  playClick();
+  document.querySelectorAll('#match-left .match-item').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+  matchLeftSel = {idx, el};
+}
+function selectRight(idx, el){
+  if(el.classList.contains('done') || !matchLeftSel) return;
+  playClick();
+  if(idx === matchLeftSel.idx){
+    matchLeftSel.el.classList.add('done'); matchLeftSel.el.classList.remove('selected');
+    el.classList.add('done');
+    drawMatchLine(matchLeftSel.el, el);
+    matchScore += 10; matchDone++;
+    playCorrect();
+    matchLeftSel = null;
+    if(matchDone === pasangan.length){
+      setTimeout(()=>{ alert('Babak B selesai! Skor: '+matchScore+'/40'); }, 300);
+    }
+  } else {
+    playWrong();
+    el.style.background = '#fee2e2';
+    setTimeout(()=>{ el.style.background=''; }, 500);
+  }
+}
+function drawMatchLine(leftEl, rightEl){
+  const svg = document.getElementById('match-svg');
+  const wrap = leftEl.closest('.match-wrap').getBoundingClientRect();
+  const l = leftEl.getBoundingClientRect(), r = rightEl.getBoundingClientRect();
+  const line = svgNode('line', {
+    x1: l.right - wrap.left, y1: l.top - wrap.top + l.height/2,
+    x2: r.left - wrap.left, y2: r.top - wrap.top + r.height/2,
+    stroke:'#10b981', 'stroke-width':'3', 'stroke-dasharray':'6 5'
+  });
+  svg.appendChild(line);
+}
+
+function updateRekap(){
+  const total = mcScore + matchScore + tfScore;
+  document.getElementById('rekap-total').textContent = total;
+  document.getElementById('skor-a').textContent = mcScore;
+  document.getElementById('skor-b').textContent = matchScore;
+  document.getElementById('skor-c').textContent = tfScore;
+}
+function resetEvaluasi(){
+  playClick();
+  mcIndex=0; mcScore=0; tfIndex=0; tfScore=0; matchScore=0; matchDone=0; matchLeftSel=null;
+  renderMC(); renderTF(); renderMatch(); updateRekap();
+  switchTab('a');
+}
+renderMC(); renderTF(); renderMatch();
+
+/* ============================================================
+   WAWASAN & FAKTA MENARIK (POP-UP)
+============================================================ */
+const wawasanList = [
+  {emoji:'📜', judul:'Tahukah Kamu?', isi:'Sistem bilangan biner modern dikembangkan secara sistematis oleh matematikawan Gottfried Wilhelm Leibniz pada abad ke-17, jauh sebelum komputer pertama diciptakan.'},
+  {emoji:'💾', judul:'Fakta Menarik!', isi:'Satu byte (8 bit) dapat merepresentasikan 256 kombinasi nilai berbeda, dari 00000000 hingga 11111111 — cukup untuk mewakili satu karakter huruf atau simbol pada teks.'},
+  {emoji:'🔤', judul:'Tahukah Kamu?', isi:'Setiap huruf yang kamu ketik di keyboard sebenarnya diubah komputer menjadi kode biner melalui standar yang disebut ASCII sebelum ditampilkan di layar.'}
+];
+function showWawasan(){
+  const w = wawasanList[Math.floor(Math.random()*wawasanList.length)];
+  document.getElementById('wawasan-emoji').textContent = w.emoji;
+  document.getElementById('wawasan-judul').textContent = w.judul;
+  document.getElementById('wawasan-isi').textContent = w.isi;
+  document.getElementById('wawasan-modal').classList.add('show');
+}
+function tutupWawasan(){
+  playClick();
+  document.getElementById('wawasan-modal').classList.remove('show');
+}
+</script>
+</body>
+</html>
